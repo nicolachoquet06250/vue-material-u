@@ -3,15 +3,32 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vue-material-u.umd.js",
+  "module": "./dist/vue-material-u.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-material-u.es.js",
+      "require": "./dist/vue-material-u.umd.js"
+    },
+    "./dist/vue-material-u.css": {
+      "import": "./dist/vue-material-u.css",
+      "require": "./dist/vue-material-u.css"
+    }
+  },
+  "types": "./dist/main.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vue-tsc && vite build && cp -r ./dist exemples && cp -r src/assets exemples",
     "preview": "vite preview"
   },
   "dependencies": {
     "vue": "^3.2.47"
   },
   "devDependencies": {
+    "@types/node": "^18.15.12",
     "@vitejs/plugin-vue": "^4.1.0",
     "typescript": "^5.0.2",
     "vite": "^4.3.0",

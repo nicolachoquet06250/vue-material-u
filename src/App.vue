@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import HelloWorld from './components/HelloWorld.vue'
+import Test from './components/Test.vue'
+
+const test = ref('');
 </script>
 
 <template>
@@ -12,6 +16,7 @@ import HelloWorld from './components/HelloWorld.vue'
     </a>
   </div>
   <HelloWorld msg="Vite + Vue" />
+  <Test v-model="test" />
 </template>
 
 <style scoped>
