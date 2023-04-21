@@ -4,6 +4,7 @@ import HelloWorld from './components/HelloWorld.vue'
 import Test from './components/Test.vue'
 
 const test = ref('');
+const test2 = ref('tralala');
 </script>
 
 <template>
@@ -16,7 +17,9 @@ const test = ref('');
     </a>
   </div>
   <HelloWorld msg="Vite + Vue" />
+  <HelloWorld msg="Vite + Vue 3" />
   <Test v-model="test" />
+  <Test v-model="test2" />
 </template>
 
 <style scoped>
