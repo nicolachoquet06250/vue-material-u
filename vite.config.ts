@@ -15,7 +15,7 @@ export default defineConfig({
   build: {
     lib: {
       // Could also be a dictionary or array of multiple entry points
-      entry: "src/components/main.ce.ts",
+      entry: "src/components/custom-elements/main.ce.ts",
       name: 'vue-material-u',
       // formats: ["es", "cjs", "umd"],
       // fileName: format => `vue-material-u.${format}.js`
