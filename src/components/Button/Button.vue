@@ -3,7 +3,9 @@
         <button 
           :class="{
             [color]: color !== 'none', 
+            [color === 'none' ? 'primary' : color]: bordered,
             [size]: true,
+            bordered
           }" 
           :disabled="disabled"
           @mouseup.stop="createRipple"
@@ -28,7 +30,9 @@
       :class="{
         [color]: color !== 'none', 
         [size]: true, 
-        [`float-${float}`]: !!float
+        [`float-${float}`]: !!float,
+        [color === 'none' ? 'border-primary' : `border-${color}`]: bordered,
+        bordered
       }" 
       :disabled="disabled"
       @mouseup.stop="createRipple"
@@ -75,7 +79,8 @@ const props = withDefaults(defineProps<{
       | 'top-center' | 'center-center' | 'bottom-center' 
       | 'top-right' | 'center-right' | 'bottom-right' 
       | false,
-    disabled?: boolean
+    disabled?: boolean,
+    bordered?: boolean,
 }>(), {
     appbar: false,
     options: () => ({
@@ -90,6 +95,7 @@ const props = withDefaults(defineProps<{
     large: true,
     float: false,
     disabled: false,
+    bordered: false,
 });
 
 const emit = defineEmits(['click']);
@@ -105,7 +111,14 @@ const shadow = computed(() => props.flat ? 'none' : '0 0 0.5rem rgba(0, 0, 0, 0.
 const radius = computed(() => props.circle ? '200px' : '1.5rem');
 
 const btnWidth = computed(() => props.appbar ? '3.5rem' : '5rem');
-const btnHeight = computed(() => props.appbar ? '3.5rem' : '5rem');
+const btnHeight = computed(() => {
+  if (props.icon) {
+    return props.appbar ? '3.5rem' : '5rem';
+  }
+  return 'auto';
+});
+const paddingX = computed(() => props.icon ? 'auto' : '24px');
+const paddingY = computed(() => props.icon ? 'auto' : '10px');
 
 const size = computed<'small' | 'medium' | 'large'>(() => {
   if (props.small) return 'small';
@@ -132,30 +145,45 @@ const handleAnimationEnd = () => (ripple.show = false);
 
 <style scoped>
 :root button {
-    position: relative;
-    overflow: hidden;
-    transition: background 400ms;
-    color: #fff;
-    background-color: transparent;
-    font-size: 1rem;
-    outline: 0;
-    border: 0;
-    cursor: pointer;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: v-bind(btnWidth);
-    height: v-bind(btnHeight);
-    border-radius: v-bind(radius);
-    box-shadow: v-bind(shadow);
+  position: relative;
+  overflow: hidden;
+  transition: background 400ms;
+  color: #fff;
+  background-color: transparent;
+  font-size: 1rem;
+  outline: 0;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: v-bind(btnWidth);
+  height: v-bind(btnHeight);
+  border-radius: v-bind(radius);
+  box-shadow: v-bind(shadow);
+
+  padding-left: v-bind(paddingX);
+  padding-right: v-bind(paddingX);
+
+  padding-top: v-bind(paddingY);
+  padding-bottom: v-bind(paddingY);
+
+  margin-left: 4px;
+  margin-right: 4px;
   
-    margin-left: 4px;
-    margin-right: 4px;
+  box-sizing: content-box;
 
-    background-color: var(--bg);
-    color: var(--color);
+  --min-border-space: 15px;
+}
 
-    --min-border-space: 15px;
+:root button:not(.bordered) {
+  background-color: var(--bg);
+  color: var(--color);
+}
+
+:root button.bordered {
+  border: 1px solid var(--border-color);
+  color: var(--border-color);
 }
 
 button:disabled {
@@ -240,6 +268,18 @@ button.float-bottom-right {
 :root button.ternary {
     --bg: var(--ternary);
     --color: var(--on-ternary);
+}
+
+:root button.bordered.border-primary {
+    --border-color: var(--primary);
+}
+  
+:root button.bordered.border-secondary {
+    --border-color: var(--secondary);
+}
+  
+:root button.bordered.border-ternary {
+    --border-color: var(--ternary);
 }
   
 :root div {

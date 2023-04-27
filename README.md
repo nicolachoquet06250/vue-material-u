@@ -16,3 +16,17 @@ If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has a
    1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
    2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
 2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+
+
+# Material You (v3)
+https://m3.material.io/
+
+## Icons
+
+- https://fonts.google.com/icons
+
+## Figma
+
+- https://material.io/blog/material-3-figma-design-kit
+- https://www.figma.com/community/file/1035203688168086460
+- https://www.figma.com/file/K6f1XnwirhwXmClzFBUcQN/Material-3-Design-Kit-(Community)?node-id=49823-12141&t=9ZgbGdk1nZGc7LRT-0
