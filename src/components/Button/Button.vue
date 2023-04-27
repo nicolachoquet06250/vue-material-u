@@ -6,7 +6,7 @@
             [size]: true,
           }" 
           :disabled="disabled"
-          @click="createRipple"
+          @mouseup.stop="createRipple"
         >
             <Icon v-if="icon" 
                   :name="icon"
@@ -16,9 +16,9 @@
 
             <slot />
 
-            <span v-if="ripple.show" 
+            <div v-if="ripple.show" 
                   class="ripple" 
-                  @animationend="ripple.show = false"
+                  @animationend="handleAnimationEnd"
             />
         </button>
     </div>
@@ -31,7 +31,7 @@
         [`float-${float}`]: !!float
       }" 
       :disabled="disabled"
-      @click="createRipple"
+      @mouseup.stop="createRipple"
     >
         <Icon v-if="icon"
               :name="icon"
@@ -41,16 +41,16 @@
 
         <slot />
 
-        <span v-if="ripple.show"
+        <div v-if="ripple.show"
               class="ripple"
-              @animationend="ripple.show = false"
+              @animationend="handleAnimationEnd"
         />
     </button>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
-import { Icon } from '../';
+import { Icon } from '../Icon';
 
 const props = withDefaults(defineProps<{
     appbar?: boolean,
@@ -79,7 +79,8 @@ const props = withDefaults(defineProps<{
 }>(), {
     appbar: false,
     options: () => ({
-      color: 'white'
+      color: 'white',
+      rotate: '0deg',
     }),
     color: 'none',
     flat: false,
@@ -94,17 +95,11 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(['click']);
 
 const ripple = reactive({
-    width: '0px',
-    height: '0px',
+    size: '0px',
     left: '0px',
     top: '0px',
     show: false
 });
-
-const width = computed(() => ripple.width);
-const height = computed(() => ripple.height);
-const left = computed(() => ripple.left);
-const top = computed(() => ripple.top);
 
 const shadow = computed(() => props.flat ? 'none' : '0 0 0.5rem rgba(0, 0, 0, 0.3)');
 const radius = computed(() => props.circle ? '200px' : '1.5rem');
@@ -119,20 +114,20 @@ const size = computed<'small' | 'medium' | 'large'>(() => {
   return 'large';
 });
 
-function createRipple(event: MouseEvent) {
-    const button = event.currentTarget as HTMLButtonElement;
+const createRipple = (event: MouseEvent) => {
+  const { currentTarget, offsetX: x, offsetY: y } = event;
+  const button = currentTarget as HTMLButtonElement;
+  const diameter = Math.max(button.clientWidth, button.clientHeight);
 
-    const diameter = Math.max(button?.clientWidth, button?.clientHeight);
-    const radius = diameter / 2;
+  ripple.size = `${diameter}px`;
+  x <= 80 && (ripple.left = `${x}px`)
+  y <= 80 && (ripple.top = `${y}px`);
+  ripple.show = true;
 
-    ripple.width = `${diameter}px`;
-    ripple.height = `${diameter}px`;
-    ripple.left = `${event.clientX - button?.offsetLeft - radius}px`;
-    ripple.top = `${event.clientY - button?.offsetTop - radius}px`;
-    ripple.show = true;
+  emit('click', event);
+};
 
-    emit('click', event);
-}
+const handleAnimationEnd = () => (ripple.show = false);
 </script>
 
 <style scoped>
@@ -264,26 +259,32 @@ button.float-bottom-right {
     width: 2.5rem;
     height: 2.5rem;
 }
-  
-span.ripple {
-    position: absolute; /* The absolute position we mentioned earlier */
-    border-radius: 50%;
-    transform: scale(0);
-    animation: ripple 600ms linear;
-    background-color: rgba(255, 255, 255, 0.7);
-    width: v-bind(width);
-    height: v-bind(height);
-    left: v-bind(left);
-    top: v-bind(top);
+</style>
+
+<style scoped>
+div.ripple {
+  display: block;
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: ripple 900ms linear forwards;
+  background-color: rgba(255, 255, 255, 0.7);
+  width: 0px;
+  height: 0px;
+  left: v-bind('ripple.left');
+  top: v-bind('ripple.top');
 }
 
 @keyframes ripple {
     to {
-        transform: scale(4);
+        width: calc(v-bind('ripple.size') * 2);
+        height: calc(v-bind('ripple.size') * 2);
         opacity: 0;
     }
 }
+</style>
 
+<style scoped>
 button :deep(span svg path) {
   fill: var(--color);
 }
