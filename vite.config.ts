@@ -13,16 +13,16 @@ export default defineConfig({
     }
   })],
   build: {
-    lib: {
-      // Could also be a dictionary or array of multiple entry points
-      entry: "src/components/custom-elements/main.ce.ts",
-      name: 'vue-material-u',
-      // formats: ["es", "cjs", "umd"],
-      // fileName: format => `vue-material-u.${format}.js`
-      fileName: 'vue-material-u'
-    },
-    cssCodeSplit: true,
-    assetsDir: 'assets'
+    // lib: {
+    //   // Could also be a dictionary or array of multiple entry points
+    //   entry: "src/components/custom-elements/main.ce.ts",
+    //   name: 'vue-material-u',
+    //   // formats: ["es", "cjs", "umd"],
+    //   // fileName: format => `vue-material-u.${format}.js`
+    //   fileName: 'vue-material-u'
+    // },
+    // cssCodeSplit: true,
+    // assetsDir: 'assets'
   },
   resolve: {
     alias: {

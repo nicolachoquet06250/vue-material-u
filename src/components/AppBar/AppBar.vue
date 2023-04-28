@@ -1,5 +1,5 @@
 <template>
-    <div :class="{container: true, [color]: true}">
+    <div :class="{container: true, [color]: true}" ref="appbar">
         <div v-if="$slots.left" :class="`part part-left ${align?.left ?? ''}`">
             <slot name="left" />
         </div>
@@ -17,9 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import { useSlots } from 'vue';
+import { onMounted, ref, useSlots } from 'vue';
+import { useAppBar } from '../../composables/useAppBar';
 
 const $slots = useSlots();
+const setAppBarHeight = useAppBar('set');
 
 withDefaults(defineProps<{
     align?: {
@@ -31,6 +33,29 @@ withDefaults(defineProps<{
 }>(), {
     color: 'primary'
 });
+
+const appbar = ref<HTMLElement>();
+
+onMounted(() => {
+    const observer = new MutationObserver((mutationList) => {
+        for (const mutation of mutationList) {
+            if (mutation.type === "childList") {
+                setAppBarHeight(`${appbar.value?.offsetHeight ?? 0}px`);
+                // console.log("A child node has been added or removed.");
+            } else if (mutation.type === "attributes") {
+                setAppBarHeight(`${appbar.value?.offsetHeight ?? 0}px`);
+                // console.log(`The ${mutation.attributeName} attribute was modified.`);
+            }
+        }
+    });
+
+    observer.observe(appbar.value as Node, { attributes: true, childList: true, subtree: true });
+
+    return () => {
+        observer.disconnect();
+        setAppBarHeight('0px');
+    }
+});
 </script>
 
 <style scoped>
@@ -38,6 +63,7 @@ withDefaults(defineProps<{
     height: 80px;
     width: 100%;
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding-left: 4px;
@@ -63,8 +89,7 @@ withDefaults(defineProps<{
 .container > .part {
     display: flex;
     align-items: center;
-    width: 100%;
-    white-space: 8px;
+    white-space: break-spaces;
     height: 100%;
 }
 

@@ -1,5 +1,12 @@
 <template>
-    <section class="container card primary">
+    <section :class="{
+        container: true, 
+        card: true, 
+        [$style[cardType]]: true
+    }"
+    @click="handleClick">
+        <Ripple ref="rippleRef" :disabled="!ripple" :parent-element="getCurrentInstance()" />
+        
         <header>
             <section>
                 <img v-if="avatar" class="avatar" :src="avatar" :alt="`avatar ${avatar}`" />
@@ -51,33 +58,60 @@
 </template>
 
 <script setup lang="ts">
-import { useSlots } from 'vue';
+import { computed, getCurrentInstance, useSlots } from 'vue';
 import Button from '../Button/Button.vue';
+import { Ripple } from '../tools';
+import { useRipple } from '../../composables/useRipple';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
     avatar?: string,
-    body?: string
-}>(), {});
+    body?: string,
+    outlined?: boolean,
+    filled?: boolean,
+    elevated?: boolean,
+    ripple?: boolean
+}>(), {
+    outlined: false,
+    filled: false,
+    elevated: false,
+    ripple: false
+});
+const emit = defineEmits(['click']);
 
 const $slots = useSlots();
+const { ripple: rippleRef, createRipple } = useRipple();
+
+const cardType = computed(() => {
+    if (props.outlined) return 'outlined';
+    if (props.filled) return 'filled';
+    if (props.elevated) return 'elevated';
+
+    return 'outlined';
+});
+
+const handleClick = (e: MouseEvent) => {
+  createRipple(e);
+  emit('click', e);
+}
 </script>
 
 <style scoped>
 section.card {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
 
     min-height: 80px;
-    /* height: calc(100vh - 100px); */
-    width: 100%;
+    width: 500px;
 
-    border-radius: 12px;
-    
     max-width: 500px;
 
+    border-radius: 12px;
+
     margin: 5px;
+    overflow: hidden;
 }
 
 section.card:not(:has(> main)),
@@ -204,5 +238,24 @@ section.card > main > section:first-of-type :deep(h3:not(:has(+ h4))) {
 
 section.card > main > section.actions {
     padding: 16px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+</style>
+
+<style module>
+.elevated {
+    box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.7);
+    -webkit-box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.7);
+    -moz-box-shadow: 1px 1px 5px 1px rgba(0,0,0,0.7);
+}
+
+.filled {
+    background-color: #e7e0ec;
+}
+
+.outlined {
+    border: 2px solid #a9a5ac;
 }
 </style>

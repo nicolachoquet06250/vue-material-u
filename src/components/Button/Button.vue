@@ -1,67 +1,62 @@
 <template>
-    <div v-if="size !== 'large' && !float">
-        <button 
-          :class="{
-            [color]: color !== 'none', 
-            [color === 'none' ? 'primary' : color]: bordered,
-            [size]: true,
-            bordered
-          }" 
-          :disabled="disabled"
-          @mouseup.stop="createRipple"
-        >
-            <Icon v-if="icon" 
-                  :name="icon"
-                  v-bind="options"
-                  v-model:color="options.color"
-            />
-
-            <slot />
-
-            <div v-if="ripple.show" 
-                  class="ripple" 
-                  @animationend="handleAnimationEnd"
-            />
-        </button>
-    </div>
-
+  <div v-if="size !== 'large' && !float">
     <button 
-      v-else 
       :class="{
         [color]: color !== 'none', 
-        [size]: true, 
-        [`float-${float}`]: !!float,
-        [color === 'none' ? 'border-primary' : `border-${color}`]: bordered,
-        bordered
+        [color === 'none' ? 'primary' : color]: outlined,
+        [size]: true,
+        outlined
       }" 
       :disabled="disabled"
-      @mouseup.stop="createRipple"
+      @click.stop="handleClick"
     >
-        <Icon v-if="icon"
-              :name="icon"
-              v-bind="options"
-              v-model:color="options.color"
-        />
+      <Ripple ref="ripple" :parent-element="getCurrentInstance()" />
+      
+      <Icon v-if="icon" 
+            :name="icon"
+            v-bind="options"
+            v-model:color="options.color"
+      />
 
-        <slot />
-
-        <div v-if="ripple.show"
-              class="ripple"
-              @animationend="handleAnimationEnd"
-        />
+      <slot />
     </button>
+  </div>
+
+  <button v-else
+    :class="{
+      [color]: color !== 'none', 
+      [size]: true, 
+      [`float-${float}`]: !!float,
+      [color === 'none' ? 'border-primary' : `border-${color}`]: outlined,
+      outlined
+    }" 
+    :disabled="disabled"
+    @click.stop="handleClick"
+  >
+    <Ripple ref="ripple" :parent-element="getCurrentInstance()" />
+    
+    <Icon v-if="icon"
+          :name="icon"
+          v-bind="options"
+          v-model:color="options.color"
+    />
+
+    <slot />
+  </button>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue';
+import { computed, getCurrentInstance} from 'vue';
 import { Icon } from '../Icon';
+import Ripple from '../tools/Ripple.vue';
+import { useRipple } from '../../composables/useRipple';
 
 const props = withDefaults(defineProps<{
     appbar?: boolean,
     icon?: string,
     options?: {
       type?: 'Outlined' | 'Filled' | 'Rounded' | 'Sharp' | 'Two tone',
-      size?: '18px' | '24px' | '36px' | '48px',
+      size?: '18px' | '20px' | '24px' | '36px' | '40px' | '48px',
       fill?: boolean,
       weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700,
       grade?: -25 | 0 | 200,
@@ -80,7 +75,7 @@ const props = withDefaults(defineProps<{
       | 'top-right' | 'center-right' | 'bottom-right' 
       | false,
     disabled?: boolean,
-    bordered?: boolean,
+    outlined?: boolean,
 }>(), {
     appbar: false,
     options: () => ({
@@ -95,17 +90,12 @@ const props = withDefaults(defineProps<{
     large: true,
     float: false,
     disabled: false,
-    bordered: false,
+    outlined: false,
 });
 
 const emit = defineEmits(['click']);
 
-const ripple = reactive({
-    size: '0px',
-    left: '0px',
-    top: '0px',
-    show: false
-});
+const { ripple, createRipple } = useRipple();
 
 const shadow = computed(() => props.flat ? 'none' : '0 0 0.5rem rgba(0, 0, 0, 0.3)');
 const radius = computed(() => props.circle ? '200px' : '1.5rem');
@@ -127,20 +117,10 @@ const size = computed<'small' | 'medium' | 'large'>(() => {
   return 'large';
 });
 
-const createRipple = (event: MouseEvent) => {
-  const { currentTarget, offsetX: x, offsetY: y } = event;
-  const button = currentTarget as HTMLButtonElement;
-  const diameter = Math.max(button.clientWidth, button.clientHeight);
-
-  ripple.size = `${diameter}px`;
-  x <= 80 && (ripple.left = `${x}px`)
-  y <= 80 && (ripple.top = `${y}px`);
-  ripple.show = true;
-
-  emit('click', event);
-};
-
-const handleAnimationEnd = () => (ripple.show = false);
+const handleClick = (e: MouseEvent) => {
+  createRipple(e);
+  emit('click', e);
+}
 </script>
 
 <style scoped>
@@ -176,12 +156,12 @@ const handleAnimationEnd = () => (ripple.show = false);
   --min-border-space: 15px;
 }
 
-:root button:not(.bordered) {
+:root button:not(.outlined) {
   background-color: var(--bg);
   color: var(--color);
 }
 
-:root button.bordered {
+:root button.outlined {
   border: 1px solid var(--border-color);
   color: var(--border-color);
 }
@@ -270,15 +250,15 @@ button.float-bottom-right {
     --color: var(--on-ternary);
 }
 
-:root button.bordered.border-primary {
+:root button.outlined.border-primary {
     --border-color: var(--primary);
 }
   
-:root button.bordered.border-secondary {
+:root button.outlined.border-secondary {
     --border-color: var(--secondary);
 }
   
-:root button.bordered.border-ternary {
+:root button.outlined.border-ternary {
     --border-color: var(--ternary);
 }
   
@@ -298,29 +278,6 @@ button.float-bottom-right {
 :root div button.medium {
     width: 2.5rem;
     height: 2.5rem;
-}
-</style>
-
-<style scoped>
-div.ripple {
-  display: block;
-  position: absolute;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: ripple 900ms linear forwards;
-  background-color: rgba(255, 255, 255, 0.7);
-  width: 0px;
-  height: 0px;
-  left: v-bind('ripple.left');
-  top: v-bind('ripple.top');
-}
-
-@keyframes ripple {
-    to {
-        width: calc(v-bind('ripple.size') * 2);
-        height: calc(v-bind('ripple.size') * 2);
-        opacity: 0;
-    }
 }
 </style>
 

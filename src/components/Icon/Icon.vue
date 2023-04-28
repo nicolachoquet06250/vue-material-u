@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
     name: string,
     symbol?: boolean,
     type?: 'Outlined' | 'Filled' | 'Rounded' | 'Sharp' | 'Two tone',
-    size?: '18px' | '24px' | '36px' | '48px',
+    size?: '18px' | '20px' | '24px' | '36px' | '40px' | '48px',
     fill?: boolean,
     weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700,
     grade?: -25 | 0 | 200,

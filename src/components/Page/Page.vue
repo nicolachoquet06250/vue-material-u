@@ -1,8 +1,69 @@
 <template>
-    <div>
-        <slot />
+    <div :class="{page: true, mt: !!$slots['sticky-header'], mb: !!$slots['sticky-footer'], ['static-body']: !!$slots['static-body']}">
+        <header ref="header" v-if="$slots['sticky-header']" class="sticky">
+            <slot name="sticky-header" />
+        </header>
+        
+        <main v-if="$slots['static-body']">
+            <slot name="static-body" />
+        </main>
+        <slot v-else />
+
+        <footer ref="footer" v-if="$slots['sticky-footer']" class="static">
+            <slot name="sticky-footer" />
+        </footer>
     </div>
 </template>
+
+<script setup lang="ts">
+import { onBeforeUpdate, onMounted, ref, useSlots } from 'vue';
+import { useAppBar, useTopAppBar } from '../../composables/useAppBar';
+
+const $slots = useSlots();
+const [appBarHeight, setAppBarHeight] = useAppBar<null>();
+const [topAppBarHeight, setTopAppBarHeight] = useTopAppBar<null>();
+
+const header = ref<HTMLElement>();
+const footer = ref<HTMLElement>();
+
+const calculateHeight = () => {
+    let result = 0;
+    if (!!$slots['sticky-header']) {
+        console.log('[header]')
+        result += parseInt(topAppBarHeight.value.replace('px', ''));
+    }
+    if (!!$slots['sticky-footer']) {
+        console.log('[footer]')
+        result += parseInt(appBarHeight.value.replace('px', ''));
+    }
+
+    return `${result}px`;
+};
+
+const preCalculHeight = ref(calculateHeight());
+
+onBeforeUpdate(() => {
+    if (header.value) {
+        setTopAppBarHeight(`${header.value?.offsetHeight ?? 0}px`);
+    }
+    if (footer.value) {
+        setAppBarHeight(`${footer.value?.offsetHeight ?? 0}px`);
+    }
+
+    preCalculHeight.value = calculateHeight();
+});
+
+onMounted(() => {
+    if (header.value) {
+        setTopAppBarHeight(`${header.value?.offsetHeight ?? 0}px`);
+    }
+    if (footer.value) {
+        setAppBarHeight(`${footer.value?.offsetHeight ?? 0}px`);
+    }
+
+    preCalculHeight.value = calculateHeight();
+});
+</script>
 
 <style scoped>
 div {
@@ -32,6 +93,45 @@ div {
     --on-success: 497337;
     --info: #a6ecec;
     --on-info: #a6ecec;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow: hidden;
+}
+
+.page.mt {
+    margin-top: v-bind(topAppBarHeight);
+}
+
+.page.mb {
+    margin-bottom: v-bind(appBarHeight);
+}
+
+.page.static-body > main {
+    height: calc(100vh - v-bind(preCalculHeight));
+    width: 100%;
+    overflow: auto;
+}
+
+header.sticky {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
+
+footer.static {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 
 @media (prefers-color-scheme: dark) {
